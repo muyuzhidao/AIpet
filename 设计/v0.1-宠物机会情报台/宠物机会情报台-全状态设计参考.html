@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>宠物机会情报台 - 全状态设计参考</title>
+  <style>
+    :root {
+      --bg: #f5f6f3;
+      --panel: #ffffff;
+      --soft: #f9faf8;
+      --line: #dfe4dc;
+      --text: #1f2933;
+      --muted: #667085;
+      --teal: #0f766e;
+      --teal-soft: #dff4ee;
+      --amber: #b7791f;
+      --amber-soft: #fff4d8;
+      --red: #b42318;
+      --red-soft: #fee4e2;
+      --blue: #2f5f9e;
+      --blue-soft: #e5efff;
+      --shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+
+    .doc {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .meta {
+      color: var(--muted);
+    }
+
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0 28px;
+    }
+
+    .toc a,
+    .tag {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #eef1ee;
+      color: #475467;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tag.teal {
+      background: var(--teal-soft);
+      color: var(--teal);
+    }
+
+    .tag.amber {
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .tag.red {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .tag.blue {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .section {
+      margin-bottom: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fcfdfb;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .preview {
+      padding: 16px 18px;
+    }
+
+    .mini-app {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr) 260px;
+      gap: 10px;
+      min-height: 240px;
+    }
+
+    .mini-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .mini-panel.white {
+      background: #ffffff;
+    }
+
+    .line {
+      height: 10px;
+      border-radius: 999px;
+      background: #dce2da;
+      margin-bottom: 8px;
+    }
+
+    .line.short {
+      width: 58%;
+    }
+
+    .line.medium {
+      width: 76%;
+    }
+
+    .line.teal {
+      background: #92d3c4;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .score {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: var(--teal);
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .empty-box,
+    .error-box,
+    .loading-box {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      border: 1px dashed #bac4b8;
+      border-radius: 8px;
+      background: #fbfcfa;
+      text-align: center;
+      padding: 18px;
+    }
+
+    .error-box {
+      border-color: #f2b8b5;
+      background: #fff8f8;
+      color: #7a271a;
+    }
+
+    .loading-box {
+      border-color: #9fcfc6;
+      background: #f4fbf8;
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 4px solid #d7eee8;
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      margin: 0 auto 12px;
+    }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0;
+    }
+
+    .status-row:last-child {
+      border-bottom: 0;
+    }
+
+    .toast-stack {
+      display: grid;
+      gap: 10px;
+      max-width: 440px;
+    }
+
+    .toast {
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.success {
+      border-color: #a8dabb;
+      background: #f3fbf5;
+    }
+
+    .toast.warning {
+      border-color: #edcf86;
+      background: #fffaf0;
+    }
+
+    .toast.error {
+      border-color: #f2b8b5;
+      background: #fff8f8;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      .mini-app {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        flex-direction: column;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="doc">
+    <header class="hero">
+      <h1>PET HOT 全状态设计参考</h1>
+      <p class="meta">版本 v0.1 · 2026-06-20 · 覆盖页面状态、Toast、边界情况、交互规则</p>
+      <nav class="toc">
+        <a href="#normal">正常态</a>
+        <a href="#loading">加载态</a>
+        <a href="#empty">空态</a>
+        <a href="#no-result">筛选无结果</a>
+        <a href="#partial">部分可用</a>
+        <a href="#errors">错误态</a>
+        <a href="#edge">边界情况</a>
+        <a href="#toast">Toast</a>
+        <a href="#rules">交互规则</a>
+      </nav>
+    </header>
+
+    <section class="section" id="normal">
+      <div class="section-head">
+        <div>
+          <span class="tag teal">正常态</span>
+          <h2>精选、全部宠业动态、AI 日报都正常展示</h2>
+          <p>左侧是轻导航，主区域按时间流阅读，精选卡片包含 AI 推荐理由，日报区展示当日结论。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <div class="mini-app">
+          <div class="mini-panel">
+            <h3>左侧导航</h3>
+            <span class="tag teal">精选</span>
+            <span class="tag">全部宠业动态</span>
+            <span class="tag">AI 日报</span>
+          </div>
+          <div class="mini-panel white">
+            <div class="card">
+              <div class="card-head"><div class="score">86</div><strong>低粉尘猫砂与呼吸友好需求</strong></div>
+              <div class="line teal"></div>
+              <div class="line medium"></div>
+              <span class="tag teal">AI 推荐</span>
+              <span class="tag amber">跨平台</span>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="score">82</div><strong>全部宠业动态时间流</strong></div>
+              <div class="line medium"></div>
+              <div class="line short"></div>
+            </div>
+          </div>
+          <div class="mini-panel">
+            <h3>AI 日报</h3>
+            <div class="line teal"></div>
+            <div class="line medium"></div>
+            <div class="line short"></div>
+            <span class="tag blue">今日结论</span>
+            <span class="tag amber">重点赛道</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="loading">
+      <div class="section-head">
+        <div>
+          <span class="tag teal">加载态</span>
+          <h2>手动更新中</h2>
+          <p>更新期间禁用重复点击，显示当前处理来源和进度。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <div class="loading-box">
+          <div>
+            <div class="spinner"></div>
+            <h3>正在更新宠业动态</h3>
+            <p>当前处理：Reddit · 已完成 4/7 个来源，精选和日报稍后重算</p>
+          </div>
+        </div>
+        <p class="note">规则：更新中“开始更新”按钮置灰；保留上一版内容流，顶部显示“正在生成新版精选和 AI 日报”。</p>
+      </div>
+    </section>
+
+    <section class="section" id="empty">
+      <div class="section-head">
+        <div>
+          <span class="tag">空态</span>
+          <h2>还没有更新过</h2>
+          <p>首次打开本地后台时，没有任何机会数据。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <div class="empty-box">
+          <div>
+            <h3>暂无宠业动态</h3>
+            <p>点击“开始更新”后生成第一版精选、全部宠业动态和 AI 日报。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="no-result">
+      <div class="section-head">
+        <div>
+          <span class="tag amber">筛选无结果</span>
+          <h2>有数据，但当前条件无匹配</h2>
+          <p>保留筛选条件，提示调整关键词、分数或来源。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <div class="empty-box">
+          <div>
+            <h3>没有符合条件的动态</h3>
+            <p>当前筛选：猫 · 仅 X 来源 · 90 分以上精选</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="partial">
+      <div class="section-head">
+        <div>
+          <span class="tag amber">部分可用</span>
+          <h2>部分来源失败，其余来源正常</h2>
+          <p>精选和全部宠业动态继续展示，顶部和数据源页记录失败来源。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <div class="status-row">
+          <strong>小红书 API</strong>
+          <span class="tag teal">成功</span>
+          <span>42 条</span>
+        </div>
+        <div class="status-row">
+          <strong>Reddit API</strong>
+          <span class="tag teal">成功</span>
+          <span>35 条</span>
+        </div>
+        <div class="status-row">
+          <strong>微信公众号</strong>
+          <span class="tag red">失败</span>
+          <span>鉴权失效</span>
+        </div>
+        <p class="note">规则：部分失败不阻断生成；精选卡片和 AI 日报都要标明缺失来源，避免把缺失数据伪装成完整判断。</p>
+      </div>
+    </section>
+
+    <section class="section" id="errors">
+      <div class="section-head">
+        <div>
+          <span class="tag red">错误态</span>
+          <h2>需要明确区分错误类型</h2>
+          <p>错误必须指向可处理原因，不只显示“失败”。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <table>
+          <thead>
+            <tr>
+              <th>错误</th>
+              <th>页面表现</th>
+              <th>用户可做什么</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>全部更新失败</td>
+              <td>精选、全部宠业动态、AI 日报都保留旧数据，顶部红色提示</td>
+              <td>查看数据源页失败原因，重新更新</td>
+            </tr>
+            <tr>
+              <td>API key 失效</td>
+              <td>数据源页标红，显示失效来源</td>
+              <td>更新 key 或关闭该来源</td>
+            </tr>
+            <tr>
+              <td>Tavily 超限</td>
+              <td>独立站和新闻来源暂停</td>
+              <td>等待额度恢复或降低关键词组数量</td>
+            </tr>
+            <tr>
+              <td>定向抓取失败</td>
+              <td>该网站状态为失败，记录 HTTP 状态或解析错误</td>
+              <td>检查网址、选择器、访问频率</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="edge">
+      <div class="section-head">
+        <div>
+          <span class="tag blue">边界情况</span>
+          <h2>长文本和大量数据</h2>
+          <p>保证信息密度，但不让文本挤压布局。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <table>
+          <thead>
+            <tr>
+              <th>边界</th>
+              <th>处理规则</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>超长标题</td>
+              <td>精选卡片和动态卡片显示 2 行，AI 日报里完整显示</td>
+            </tr>
+            <tr>
+              <td>超长原文</td>
+              <td>详情页默认展示关键片段，支持展开</td>
+            </tr>
+            <tr>
+              <td>长 URL</td>
+              <td>显示域名和路径摘要，完整链接放在 hover/title 或复制操作中</td>
+            </tr>
+            <tr>
+              <td>大量动态</td>
+              <td>全部宠业动态分页或虚拟滚动，每次显示稳定高度卡片</td>
+            </tr>
+            <tr>
+              <td>重复主题</td>
+              <td>精选区按主题聚合，保留多个来源作为证据链；全部动态区保留原始时间序</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="toast">
+      <div class="section-head">
+        <div>
+          <span class="tag teal">Toast</span>
+          <h2>操作反馈</h2>
+          <p>右上角显示，成功 3 秒，警告 5 秒，错误 8 秒；最多同时显示 3 条。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <div class="toast-stack">
+          <div class="toast success"><strong>更新完成</strong><br />生成 126 条宠业动态，AI 写出 9 条精选推荐理由。</div>
+          <div class="toast warning"><strong>部分来源失败</strong><br />微信公众号鉴权失效，已跳过该来源。</div>
+          <div class="toast error"><strong>更新失败</strong><br />所有来源均未返回有效数据，请检查 API key。</div>
+          <div class="toast success"><strong>已加入精选</strong><br />低粉尘猫砂已被纳入今日精选。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="rules">
+      <div class="section-head">
+        <div>
+          <span class="tag blue">交互规则</span>
+          <h2>行为映射表</h2>
+          <p>前端实现时按表格覆盖主要操作。</p>
+        </div>
+      </div>
+      <div class="preview">
+        <table>
+          <thead>
+            <tr>
+              <th>触发</th>
+              <th>用户操作</th>
+              <th>系统行为</th>
+              <th>反馈</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>用户</td>
+              <td>点击“开始更新”</td>
+              <td>创建更新任务，依次调用数据源，生成全量动态，再重算精选和 AI 日报</td>
+              <td>进入加载态，完成后 Toast 汇总</td>
+            </tr>
+            <tr>
+              <td>用户</td>
+              <td>点击精选卡片</td>
+              <td>展开当前卡片的推荐理由和标签信息，保留时间流位置</td>
+              <td>卡片高亮，推荐理由可见</td>
+            </tr>
+            <tr>
+              <td>用户</td>
+              <td>切换到“全部宠业动态”</td>
+              <td>滚动到全量时间流模块，不重新抓取</td>
+              <td>模块高亮，页面保持当前位置上下文</td>
+            </tr>
+            <tr>
+              <td>用户</td>
+              <td>打开“AI 日报”</td>
+              <td>跳转到日报模块，展示当日结论和章节卡片</td>
+              <td>日报模块进入视口</td>
+            </tr>
+            <tr>
+              <td>用户</td>
+              <td>筛选来源或标签</td>
+              <td>过滤当前内容流，不重新抓取</td>
+              <td>列表刷新；无匹配进入筛选无结果态</td>
+            </tr>
+            <tr>
+              <td>系统</td>
+              <td>部分来源失败</td>
+              <td>继续处理成功来源，记录失败来源</td>
+              <td>顶部显示部分可用，精选和日报带缺失说明</td>
+            </tr>
+            <tr>
+              <td>系统</td>
+              <td>全部来源失败</td>
+              <td>保留旧数据，不生成新版内容流</td>
+              <td>错误 Toast，首页显示失败提示</td>
+            </tr>
+            <tr>
+              <td>异常</td>
+              <td>API key 失效</td>
+              <td>停止该来源，其他来源继续</td>
+              <td>数据源页标红，Toast 给出具体来源</td>
+            </tr>
+            <tr>
+              <td>异常</td>
+              <td>Tavily 超限</td>
+              <td>停止 Tavily 相关独立站和新闻检索</td>
+              <td>警告 Toast，记录额度错误</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
