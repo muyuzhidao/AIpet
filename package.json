@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "update": "tsx scripts/update.ts"
   },
   "dependencies": {
     "next": "16.2.9",
@@ -17,6 +18,8 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "dotenv": "^17.4.2",
+    "tsx": "^4.22.4",
     "typescript": "6.0.3"
   }
 }

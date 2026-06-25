@@ -1,38 +1,6 @@
-export type ChipTone = "default" | "accent" | "warm" | "blue" | "rose";
-
-export type Chip = {
-  label: string;
-  tone?: ChipTone;
-};
-
-export type FeaturedStory = {
-  time: string;
-  title: string;
-  summary: string;
-  sources: string[];
-  sourceCount: string;
-  segment: string;
-  tags: Chip[];
-  categories: Chip[];
-  aiReason: string;
-};
-
-export type NewsItem = {
-  time: string;
-  title: string;
-  summary: string;
-  source: string;
-  sourceType: string;
-  sourceMeta: string;
-  tags: Chip[];
-};
-
-export type ReportCard = {
-  number: string;
-  title: string;
-  summary: string;
-  tags: Chip[];
-};
+// 出厂种子数据:源自第一版静态 mock,作为 data/snapshot.json 缺失时的回退。
+// 类型集中在 lib/types,本文件只保留数据与快照组装。
+import type { FeaturedStory, NewsItem, ReportCard, Snapshot } from "./types";
 
 export const sourceStats = [
   { label: "抖音", count: "31" },
@@ -344,3 +312,15 @@ export const archiveItems = [
   { date: "06/22", title: "宠物口腔护理喷雾的真实使用体验开始分化", count: "14 事件" },
   { date: "06/21", title: "小体积烘干箱在内容平台进入新一轮讨论", count: "22 事件" }
 ];
+
+export const seedSnapshot: Snapshot = {
+  generatedAt: "2026-06-24T08:00:00+08:00",
+  topics: topTopics,
+  sources: sourceStats,
+  featured: featuredStories,
+  news: newsItems,
+  daily: {
+    reportCards,
+    archive: archiveItems
+  }
+};

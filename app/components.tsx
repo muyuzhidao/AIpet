@@ -1,17 +1,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import type { Chip, FeaturedStory, NewsItem, SourceStat } from "../lib/types";
 import {
-  archiveItems,
-  featuredStories,
-  newsItems,
-  reportCards,
-  sourceStats,
-  topTopics,
-  type Chip,
-  type FeaturedStory,
-  type NewsItem
-} from "./data";
+  getArchive,
+  getFeatured,
+  getNews,
+  getReportCards,
+  getSourceStats,
+  getTopTopics
+} from "../lib/store";
 
 export type ModuleKey = "featured" | "all-news" | "daily";
 
@@ -107,7 +105,7 @@ function matchesNewsSource(item: NewsItem, source?: string) {
   return !source || source === "全部" || item.source === source;
 }
 
-function Sidebar({ active, newsSource }: { active: ModuleKey; newsSource?: string }) {
+function Sidebar({ active, newsSource, sourceStats }: { active: ModuleKey; newsSource?: string; sourceStats: SourceStat[] }) {
   return (
     <aside className="sidebar">
       <Link className="logo-card" href="/featured" aria-label="PET HOT 首页">
@@ -219,7 +217,9 @@ function TopPanel({
   );
 }
 
-function HotBoard() {
+async function HotBoard() {
+  const topTopics = await getTopTopics();
+
   return (
     <section className="hot-board" aria-label="今日热点">
       <div className="hot-head">
@@ -358,7 +358,8 @@ function TimelineItem({ time, children }: { time: string; children: ReactNode })
   );
 }
 
-function FeaturedSection({ category }: { category?: string }) {
+async function FeaturedSection({ category }: { category?: string }) {
+  const featuredStories = await getFeatured();
   const stories = featuredStories.filter((story) => matchesFeaturedCategory(story, category));
 
   return (
@@ -378,7 +379,8 @@ function FeaturedSection({ category }: { category?: string }) {
   );
 }
 
-function AllNewsSection({ source }: { source?: string }) {
+async function AllNewsSection({ source }: { source?: string }) {
+  const newsItems = await getNews();
   const items = newsItems.filter((item) => matchesNewsSource(item, source));
 
   return (
@@ -407,7 +409,9 @@ function AllNewsSection({ source }: { source?: string }) {
   );
 }
 
-function DailyLead() {
+async function DailyLead() {
+  const archiveItems = await getArchive();
+
   return (
     <section className="daily-lead">
       <article className="daily-summary">
@@ -448,7 +452,9 @@ function DailyLead() {
   );
 }
 
-function DailyReportSection() {
+async function DailyReportSection() {
+  const reportCards = await getReportCards();
+
   return (
     <>
       <DailyLead />
@@ -482,7 +488,7 @@ function DailyReportSection() {
   );
 }
 
-export function AppFrame({
+export async function AppFrame({
   active,
   children,
   filters
@@ -491,12 +497,13 @@ export function AppFrame({
   children: ReactNode;
   filters?: FilterState;
 }) {
+  const [featuredStories, newsItems, sourceStats] = await Promise.all([getFeatured(), getNews(), getSourceStats()]);
   const featuredCount = featuredStories.filter((story) => matchesFeaturedCategory(story, filters?.featuredCategory)).length;
   const newsCount = newsItems.filter((item) => matchesNewsSource(item, filters?.newsSource)).length;
 
   return (
     <div className="app-shell">
-      <Sidebar active={active} newsSource={filters?.newsSource} />
+      <Sidebar active={active} newsSource={filters?.newsSource} sourceStats={sourceStats} />
       <main className="page">
         <div className="shell">
           <TopPanel
