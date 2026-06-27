@@ -536,12 +536,25 @@ button {
 }
 
 .timeline-item > time {
-  padding-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: 13px;
   color: #24324d;
   font-family: var(--mono);
-  font-size: 18px;
-  font-weight: 800;
   text-align: right;
+  line-height: 1.15;
+}
+
+.time-date {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.time-clock {
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .timeline-rail {
@@ -583,6 +596,22 @@ button {
   min-width: 0;
   max-width: 100%;
   padding: 16px 18px 14px;
+}
+
+.feed-card-link {
+  display: block;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.feed-card-link:hover {
+  border-color: var(--cyan-strong);
+  box-shadow: 0 14px 32px rgba(67, 114, 146, 0.16);
+  transform: translateY(-1px);
 }
 
 .feed-card-head {
@@ -937,8 +966,16 @@ button {
 
   .timeline-item > time {
     padding-top: 0;
-    font-size: 13px;
+    align-items: flex-start;
     text-align: left;
+  }
+
+  .time-date {
+    font-size: 11.5px;
+  }
+
+  .time-clock {
+    font-size: 14px;
   }
 
   .date-row {

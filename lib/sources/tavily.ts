@@ -3,6 +3,7 @@
 // 用语义搜索(topic=general)保证垂直相关性,并对结果做宠物相关性过滤兜底。
 
 import type { RawItem, SourceRunResult } from "../types";
+import { fetchWithTimeout } from "../http";
 
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
 
@@ -53,20 +54,24 @@ function isPetRelated(text: string): boolean {
 }
 
 async function searchOnce(query: string, key: string): Promise<TavilyResult[]> {
-  const res = await fetch(TAVILY_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`
+  const res = await fetchWithTimeout(
+    TAVILY_ENDPOINT,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        query,
+        topic: "general", // 语义搜索,垂直相关性高于 news
+        search_depth: "basic", // basic = 1 credit/次,贴合零成本
+        max_results: 6,
+        include_raw_content: false
+      })
     },
-    body: JSON.stringify({
-      query,
-      topic: "general", // 语义搜索,垂直相关性高于 news
-      search_depth: "basic", // basic = 1 credit/次,贴合零成本
-      max_results: 6,
-      include_raw_content: false
-    })
-  });
+    30_000
+  );
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");

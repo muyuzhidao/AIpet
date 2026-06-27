@@ -22,6 +22,8 @@ export type FeaturedStory = {
   tags: Chip[];
   categories: Chip[];
   aiReason: string;
+  score?: number; // AI 评分总分 0-100;缺省时页面用占位分
+  url?: string; // 主证据原文链接,点击卡片跳转
 };
 
 export type NewsItem = {
@@ -32,6 +34,7 @@ export type NewsItem = {
   sourceType: string;
   sourceMeta: string;
   tags: Chip[];
+  url?: string; // 原文链接,点击卡片跳转
 };
 
 export type ReportCard = {
@@ -59,7 +62,19 @@ export type ArchiveItem = {
   count: string;
 };
 
+export type DailyLeadStat = {
+  value: string;
+  label: string;
+};
+
+export type DailyLead = {
+  title: string;
+  summary: string;
+  stats: DailyLeadStat[];
+};
+
 export type DailySection = {
+  lead?: DailyLead;
   reportCards: ReportCard[];
   archive: ArchiveItem[];
 };
@@ -76,8 +91,8 @@ export type SourceKind =
   | "news"
   | "independent_site";
 
-// 抓取方式:同一来源可能经不同通道获取(如 X 内容经第三方 Grok 检索)。
-export type FetchVia = "reddit_api" | "x_grok" | "tavily" | "manual";
+// 抓取方式:同一来源可能经不同通道获取(如 X 内容经第三方 Grok 检索,国内平台经 RedFox)。
+export type FetchVia = "reddit_api" | "x_grok" | "tavily" | "redfox" | "manual";
 
 // 一条原始内容,清洗去重前的最小单元。保留原文链接与原始字段。
 export type RawItem = {

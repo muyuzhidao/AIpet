@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 import type { Chip, FeaturedStory, NewsItem, SourceStat } from "../lib/types";
 import {
-  getArchive,
+  getDaily,
   getFeatured,
   getNews,
   getReportCards,
@@ -272,17 +272,28 @@ function StoryBadges({
   );
 }
 
+function CardShell({ url, className, children }: { url?: string; className: string; children: ReactNode }) {
+  if (url) {
+    return (
+      <a className={`${className} feed-card-link`} href={url} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    );
+  }
+  return <article className={className}>{children}</article>;
+}
+
 function FeaturedCard({ story, index }: { story: FeaturedStory; index: number }) {
   const sourceText = story.sources.filter((source) => source !== "精选").join(" · ") || story.sources[0];
 
   return (
-    <article className="feed-card">
+    <CardShell className="feed-card" url={story.url}>
       <div className="feed-card-head">
         <div className="source-line">
           <SourceInitial source={sourceText} />
           <span>{sourceText}</span>
         </div>
-        <StoryBadges score={storyScores[index % storyScores.length]} />
+        <StoryBadges score={story.score != null ? String(story.score) : storyScores[index % storyScores.length]} />
       </div>
 
       <h2>{story.title}</h2>
@@ -302,13 +313,13 @@ function FeaturedCard({ story, index }: { story: FeaturedStory; index: number })
         <strong>推荐理由：</strong>
         <span>{story.aiReason}</span>
       </div>
-    </article>
+    </CardShell>
   );
 }
 
 function NewsCard({ item, index }: { item: NewsItem; index: number }) {
   return (
-    <article className="feed-card">
+    <CardShell className="feed-card" url={item.url}>
       <div className="feed-card-head">
         <div className="source-line">
           <SourceInitial source={item.source} />
@@ -333,7 +344,7 @@ function NewsCard({ item, index }: { item: NewsItem; index: number }) {
         <strong>AI 摘要：</strong>
         <span>这条动态适合用于验证细分人群、卖点表达和内容选题的持续热度。</span>
       </div>
-    </article>
+    </CardShell>
   );
 }
 
@@ -347,9 +358,13 @@ function EmptyFeed({ text }: { text: string }) {
 }
 
 function TimelineItem({ time, children }: { time: string; children: ReactNode }) {
+  const [datePart, timePart] = time.includes(" ") ? time.split(" ") : ["", time];
   return (
     <div className="timeline-item">
-      <time>{time}</time>
+      <time>
+        {datePart ? <span className="time-date">{datePart}</span> : null}
+        <span className="time-clock">{timePart}</span>
+      </time>
       <span className="timeline-rail">
         <span className="timeline-dot" />
       </span>
@@ -363,10 +378,10 @@ async function FeaturedSection({ category }: { category?: string }) {
   const stories = featuredStories.filter((story) => matchesFeaturedCategory(story, category));
 
   return (
-    <Timeline date={category && category !== "全部" ? `6月24日 · ${category}` : "6月24日"}>
+    <Timeline date={category && category !== "全部" ? `今日精选 · ${category}` : "今日精选"}>
       {stories.length > 0 ? (
         stories.map((story, index) => (
-          <TimelineItem time={story.time} key={story.title}>
+          <TimelineItem time={story.time} key={`${index}-${story.title}`}>
             <FeaturedCard story={story} index={index} />
           </TimelineItem>
         ))
@@ -392,10 +407,10 @@ async function AllNewsSection({ source }: { source?: string }) {
         ))}
       </div>
 
-      <Timeline date={source && source !== "全部" ? `6月24日 · ${source}` : "6月24日"}>
+      <Timeline date={source && source !== "全部" ? `${source} · 近 30 天 · 按发布时间倒序` : "近 30 天动态 · 按发布时间倒序"}>
         {items.length > 0 ? (
           items.map((item, index) => (
-            <TimelineItem time={item.time} key={item.title}>
+            <TimelineItem time={item.time} key={`${index}-${item.title}`}>
               <NewsCard item={item} index={index} />
             </TimelineItem>
           ))
@@ -410,7 +425,18 @@ async function AllNewsSection({ source }: { source?: string }) {
 }
 
 async function DailyLead() {
-  const archiveItems = await getArchive();
+  const daily = await getDaily();
+  const lead = daily.lead;
+  const title = lead?.title ?? "猫砂、老年犬营养和除味护理正在从内容热词进入可验证机会。";
+  const summary =
+    lead?.summary ??
+    "今天最值得注意的不是单条爆文，而是三条信号同时变清晰：同一痛点在不同平台重复出现、用户表达更具体、品牌卖点开始迁移。";
+  const stats = lead?.stats ?? [
+    { value: "126", label: "今日动态" },
+    { value: "9", label: "精选机会" },
+    { value: "3", label: "重点赛道" },
+    { value: "6", label: "接入来源" }
+  ];
 
   return (
     <section className="daily-lead">
@@ -419,20 +445,13 @@ async function DailyLead() {
           <SourceInitial source="PET HOT DAILY" />
           <span>PET HOT DAILY · 今日结论</span>
         </div>
-        <h2>猫砂、老年犬营养和除味护理正在从内容热词进入可验证机会。</h2>
-        <p>
-          今天最值得注意的不是单条爆文，而是三条信号同时变清晰：同一痛点在不同平台重复出现、用户表达更具体、品牌卖点开始迁移。
-        </p>
+        <h2>{title}</h2>
+        <p>{summary}</p>
         <div className="daily-stats">
-          {[
-            ["126", "今日动态"],
-            ["9", "精选机会"],
-            ["3", "重点赛道"],
-            ["6", "接入来源"]
-          ].map(([value, label]) => (
-            <div key={label}>
-              <strong>{value}</strong>
-              <span>{label}</span>
+          {stats.map((stat) => (
+            <div key={stat.label}>
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
             </div>
           ))}
         </div>
@@ -440,7 +459,7 @@ async function DailyLead() {
 
       <aside className="archive-card">
         <strong>历史日报</strong>
-        {archiveItems.map((item) => (
+        {daily.archive.map((item) => (
           <a href="#" key={item.date}>
             <time>{item.date}</time>
             <span>{item.title}</span>

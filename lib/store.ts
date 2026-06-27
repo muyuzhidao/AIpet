@@ -9,6 +9,7 @@ import path from "node:path";
 import { seedSnapshot } from "./seed";
 import type {
   ArchiveItem,
+  DailySection,
   FeaturedStory,
   NewsItem,
   ReportCard,
@@ -53,4 +54,8 @@ export async function getReportCards(): Promise<ReportCard[]> {
 
 export async function getArchive(): Promise<ArchiveItem[]> {
   return (await getSnapshot()).daily.archive;
+}
+
+export async function getDaily(): Promise<DailySection> {
+  return (await getSnapshot()).daily;
 }
